@@ -15,24 +15,6 @@ interface Recording {
   type?: string;
 }
 
-interface AudioAnalysisResult {
-  // Define the structure based on your emotionDetector implementation
-  // This is a placeholder - update with your actual structure
-  emotions: {
-    happiness: number;
-    sadness: number;
-    excitement: number;
-    calmness: number;
-    // any other emotions you're tracking
-  };
-  technicalDetails?: {
-    tempo?: number;
-    key?: string;
-    // other technical details
-  };
-  feedback?: string;
-}
-
 const Analyzer: React.FC = () => {
   const [recordings, setRecordings] = useState<Recording[]>([]);
   const [selectedRecording, setSelectedRecording] = useState<Recording | null>(null);
