@@ -1,13 +1,8 @@
 import React from 'react';
-import { AudioAnalysisResult, EmotionData } from '../utils/emotionDetector';
-
-export interface EmotionResult {
-  emotion: string;
-  confidence: number;
-}
+import { AudioAnalysisResult } from '../utils/emotionDetector';
 
 interface EmotionResultCardProps {
-  analysisResults: AudioAnalysisResult;
+  analysisResults: AudioAnalysisResult;  // Expecting 'analysisResults' as the prop
 }
 
 const EmotionResultCard: React.FC<EmotionResultCardProps> = ({ analysisResults }) => {
