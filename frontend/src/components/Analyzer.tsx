@@ -221,76 +221,41 @@ const Analyzer: React.FC = () => {
           </div>
         </div>
 
-        {/* Analysis Section */}
-        <div className="md:col-span-2 bg-amber-50/50 p-6 rounded-xl shadow-sm">
+                {/* Analysis Section */}
+        <div className="md:col-span-2 bg-amber-50/50 p-6 rounded-xl shadow-inner">
           {selectedRecording ? (
-            <div className="space-y-4">
-              <div className="mb-4">
-                <h3 className="font-semibold text-amber-900 mb-1">Selected Recording</h3>
-                <p className="text-amber-800">{selectedRecording.name}</p>
-                
-                <div className="mt-4">
-                  <audio 
-                    src={selectedRecording.url} 
-                    controls 
-                    className="w-full"
-                  />
-                </div>
-              </div>
-              
-              {isAnalyzing ? (
-                <div className="flex flex-col justify-center items-center space-y-3 py-8">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 animate-spin text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4V2m0 20v-2m8-12h2m-20 0h2m14.828 6.172l1.414 1.414M4.929 4.929l1.414 1.414M18 16l1.414 1.414m-12.828 0L4.929 16" />
-                  </svg>
-                  <p className="text-amber-700 font-medium">Analyzing your Song Playing...</p>
-                </div>
-              ) : analysisResults ? (
-                <div>
-                  <EmotionResultCard analysisResults={analysisResults} />
-                  <button 
-                    onClick={handleDownloadResults} 
-                    className="w-full bg-amber-600 hover:bg-amber-700 text-white py-2 px-6 rounded-lg shadow-md transition-all duration-300 mt-4 flex items-center justify-center"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
-                    </svg>
-                    Download Analysis Results
-                  </button>
-                </div>
-              ) : error ? (
-                <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded">
-                  <div className="flex">
-                    <div className="flex-shrink-0">
-                      <svg className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <div className="ml-3">
-                      <p className="text-sm text-red-700">{error}</p>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <button 
-                  onClick={handleAnalyze} 
-                  className="w-full bg-amber-500 hover:bg-amber-600 text-white py-3 px-6 rounded-lg shadow-md transition-all duration-300 flex items-center justify-center"
+            <>
+              <h3 className="text-lg font-semibold text-amber-900 mb-2">{selectedRecording.name}</h3>
+              <p className="text-sm text-amber-700 mb-4">{selectedRecording.date}</p>
+
+              <div className="flex items-center space-x-4 mb-4">
+                <button
+                  onClick={handleAnalyze}
+                  disabled={isAnalyzing}
+                  className="bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300 disabled:opacity-50"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
-                  Analyze Song Playing
+                  {isAnalyzing ? 'Analyzing...' : 'Analyze Emotion'}
                 </button>
+                {analysisResults && (
+                  <button
+                    onClick={handleDownloadResults}
+                    className="bg-amber-600 hover:bg-amber-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300"
+                  >
+                    Download Results
+                  </button>
+                )}
+              </div>
+
+              {error && <div className="text-red-600 mb-4">{error}</div>}
+
+              {analysisResults ? (
+                <EmotionResultCard results={analysisResults} />
+              ) : (
+                <p className="text-amber-800 italic">No analysis available. Click "Analyze Emotion" to start.</p>
               )}
-            </div>
+            </>
           ) : (
-            <div className="flex flex-col items-center justify-center h-full py-12 text-center">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-amber-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-              </svg>
-              <h3 className="text-xl font-semibold text-amber-900 mb-2">Select a Recording</h3>
-              <p className="text-amber-700">Choose a recording from the list to analyze its emotional qualities</p>
-            </div>
+            <div className="text-center text-amber-800 italic">Select a recording from the list to view and analyze.</div>
           )}
         </div>
       </div>
