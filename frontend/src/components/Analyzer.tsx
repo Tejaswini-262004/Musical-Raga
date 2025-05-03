@@ -24,27 +24,30 @@ const Analyzer: React.FC = () => {
   const router = useRouter();
   const { id: queryId } = router.query;
 
+  // Load all recordings once when the component is mounted
   useEffect(() => {
     loadRecordings();
   }, []);
 
+  // If a recording ID is provided in the URL, load that specific recording
   useEffect(() => {
-    // If a recording ID is provided in the URL, select that recording
     if (queryId && typeof queryId === 'string') {
       loadSpecificRecording(queryId);
     }
-  }, [queryId, recordings]);
+  }, [queryId]);
 
+  // Function to load all recordings from storage
   const loadRecordings = async () => {
     try {
-      const saved = await getAllRecordings();
-      setRecordings(saved);
+      const savedRecordings = await getAllRecordings();
+      setRecordings(savedRecordings);
     } catch (error) {
       console.error('Failed to load recordings', error);
       setError('Failed to load recordings. Please try again.');
     }
   };
 
+  // Function to load a specific recording by ID
   const loadSpecificRecording = async (id: string) => {
     try {
       const recording = await getRecordingById(id);
@@ -53,51 +56,48 @@ const Analyzer: React.FC = () => {
       }
     } catch (error) {
       console.error('Failed to load specific recording', error);
+      setError('Failed to load the selected recording. Please try again.');
     }
   };
 
+  // Handle the selection of a recording from the list
   const handleSelectRecording = (recording: Recording) => {
     setSelectedRecording(recording);
-    setAnalysisResults(null);
-    setError(null);
+    setAnalysisResults(null); // Reset analysis results when selecting a new recording
+    setError(null); // Reset any previous errors
   };
 
+  // Analyze the selected recording
   const handleAnalyze = async () => {
     if (!selectedRecording) return;
-    
+
     try {
       setIsAnalyzing(true);
-      setError(null);
-      
-      // For this to work, we need to access the actual audio blob
-      // If we only have a URL, we need to fetch it
+      setError(null); // Reset any previous errors
+
+      // Retrieve the audio blob from the selected recording
       let audioBlob = selectedRecording.blob;
-      
+
+      // If no blob exists, fetch the audio file from the URL
       if (!audioBlob && selectedRecording.url) {
-        try {
-          const response = await fetch(selectedRecording.url);
-          audioBlob = await response.blob();
-        } catch (err) {
-          console.error('Error fetching audio blob:', err);
-          setError('Could not access audio data. Please try again.');
-          setIsAnalyzing(false);
-          return;
-        }
+        const response = await fetch(selectedRecording.url);
+        audioBlob = await response.blob();
       }
-      
+
       if (!audioBlob) {
-        setError('No audio data available for analysis');
+        setError('No audio data available for analysis.');
         setIsAnalyzing(false);
         return;
       }
 
+      // Analyze the audio
       const results = await analyzeAudio(audioBlob);
       setAnalysisResults(results);
-      
-      // Save analysis results with the recording
+
+      // Save analysis results with the selected recording
       if (results) {
         await updateRecording(selectedRecording.id, {
-          analysisResults: results
+          analysisResults: results,
         });
       }
     } catch (err) {
@@ -108,17 +108,20 @@ const Analyzer: React.FC = () => {
     }
   };
 
+  // Delete the selected recording
   const handleDeleteRecording = async (e: React.MouseEvent, recordingId: string) => {
     e.stopPropagation();
     if (window.confirm('Are you sure you want to delete this recording?')) {
       try {
         await deleteRecording(recordingId);
-        
+
+        // Reset the selected recording and analysis results if the deleted recording was the selected one
         if (selectedRecording?.id === recordingId) {
           setSelectedRecording(null);
           setAnalysisResults(null);
         }
-        
+
+        // Reload the list of recordings
         await loadRecordings();
       } catch (error) {
         console.error('Error deleting recording:', error);
@@ -127,6 +130,7 @@ const Analyzer: React.FC = () => {
     }
   };
 
+  // Download the analysis results as a JSON file
   const handleDownloadResults = () => {
     if (!analysisResults || !selectedRecording) return;
 
@@ -172,7 +176,7 @@ const Analyzer: React.FC = () => {
         <div className="md:col-span-1 bg-amber-50 rounded-xl p-4 h-96 overflow-y-auto shadow-inner">
           <h3 className="font-semibold text-amber-900 mb-3">Your Recordings</h3>
           <div className="space-y-2">
-            {recordings.map(recording => (
+            {recordings.map((recording) => (
               <div
                 key={recording.id}
                 className={`p-3 rounded-lg cursor-pointer transition-all duration-200 flex justify-between items-center ${
@@ -203,42 +207,45 @@ const Analyzer: React.FC = () => {
           </div>
         </div>
 
-                {/* Analysis Section */}
-        <div className="md:col-span-2 bg-amber-50/50 p-6 rounded-xl shadow-inner">
-          {selectedRecording ? (
-            <>
-              <h3 className="text-lg font-semibold text-amber-900 mb-2">{selectedRecording.name}</h3>
-              <p className="text-sm text-amber-700 mb-4">{selectedRecording.date}</p>
-
-              <div className="flex items-center space-x-4 mb-4">
-                <button
-                  onClick={handleAnalyze}
-                  disabled={isAnalyzing}
-                  className="bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300 disabled:opacity-50"
-                >
-                  {isAnalyzing ? 'Analyzing...' : 'Analyze Emotion'}
-                </button>
-                {analysisResults && (
+        {/* Analysis Section */}
+        <div className="md:col-span-2 bg-amber-50/50 p-6 rounded-xl shadow-lg">
+          <h3 className="text-xl font-semibold text-amber-900 mb-3">Analyze Recording</h3>
+          <div className="space-y-4">
+            {selectedRecording ? (
+              <>
+                {/* Recording Info */}
+                <div className="text-lg text-amber-700">{selectedRecording.name}</div>
+                <div className="text-sm text-amber-600 mb-4">{selectedRecording.date}</div>
+                <div className="flex space-x-4">
+                  <button
+                    onClick={handleAnalyze}
+                    disabled={isAnalyzing}
+                    className="bg-amber-500 text-white py-2 px-6 rounded-lg shadow-md hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isAnalyzing ? 'Analyzing...' : 'Analyze'}
+                  </button>
                   <button
                     onClick={handleDownloadResults}
-                    className="bg-amber-600 hover:bg-amber-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300"
+                    disabled={!analysisResults}
+                    className="bg-amber-600 text-white py-2 px-6 rounded-lg shadow-md hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Download Results
                   </button>
-                )}
-              </div>
-
-              {error && <div className="text-red-600 mb-4">{error}</div>}
-
-              {analysisResults ? (
-                <EmotionResultCard results={analysisResults} />
-              ) : (
-                <p className="text-amber-800 italic">No analysis available. Click "Analyze Emotion" to start.</p>
-              )}
-            </>
-          ) : (
-            <div className="text-center text-amber-800 italic">Select a recording from the list to view and analyze.</div>
-          )}
+                </div>
+              </>
+            ) : (
+              <div className="text-center text-amber-600">Select a recording to analyze</div>
+            )}
+            {/* Display error */}
+            {error && <div className="text-red-500 text-center mt-4">{error}</div>}
+            {/* Display results if available */}
+            {analysisResults && (
+              <EmotionResultCard
+                results={analysisResults}
+                recordingName={selectedRecording?.name || ''}
+              />
+            )}
+          </div>
         </div>
       </div>
     </div>
