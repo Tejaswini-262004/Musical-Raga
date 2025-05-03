@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import EmotionResultCard from './EmotionResultCard';
-import type { AudioAnalysisResult } from '../utils/emotionDetector';
+import type { AudioAnalysisResult as ImportedAudioAnalysisResult } from '../utils/emotionDetector';
 import { getAllRecordings, getRecordingById, deleteRecording, updateRecording } from '../utils/storage';
 
 interface Recording {
